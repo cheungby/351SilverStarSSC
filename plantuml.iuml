@@ -62,18 +62,13 @@ component GAPP {
    component "\n{{\nsalt\n{+\nBox Id | "Box #"\nLocation | ^Location List^\n Amount | "$$ Amount"\n[SUBMIT]\n}\n}}" as GAPP_FORM_SSC
    
    database "Google Sheet" {
-      component "{{\nrecord "Cadet Data" {\n-BoxId\n-ShiftId\n-Rank\n-First Name\n-Last Name\n}\n}}" as CadetData
-      component "{{\nrecord "SSC Data" {\n-BoxId\n-ShiftId\n-Location\n-Amount\n}\n}}" as SSCData 
-      component MasterDataSheet
+      component "{{\nrecord "Cadet Data" {\n-BoxId\n-ShiftId\n-Rank\n-First Name\n-Last Name\n-Location\n-Amount\n}\n}}" as Data
    }
    
    GAPP_CADET_FORM_URL -- GAPP_FORM_CADET
    GAPP_SSC_FORM_URL -- GAPP_FORM_SSC
-   GAPP_FORM_CADET --> CadetData
-   GAPP_FORM_SSC --> SSCData
-   CadetData --> MasterDataSheet
-   SSCData --> MasterDataSheet
-   
+   GAPP_FORM_CADET --> Data
+   GAPP_FORM_SSC --> Data
 }
 
 rectangle Return {
@@ -105,5 +100,6 @@ LOCATION_ASSIGNMENT ..> GAPP_QR_SSC : use
 COLLECTION_COUNT ..> GAPP_QR_SSC : use
 GAPP_QR_BOX -- GAPP_CADET_FORM_URL
 GAPP_QR_SSC -- GAPP_SSC_FORM_URL
+
 
 @enduml
