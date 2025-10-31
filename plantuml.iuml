@@ -10,22 +10,18 @@ actor Cadet as CDT
 rectangle Dispatch {
    usecase "Start" as DISPATCH_START
    usecase "Box Assignment" as BOX_ASSIGNMENT
-   usecase "\n{{\nsalt\n{+\nBox Id | "Box #"\nRank | ^Rank List^\nFirst Name | "First Name"\nLast Name | "Last Name"\n[SUBMIT]\n}\n}}" as CADET_FORM
    usecase "Assign Location" as LOCATION_ASSIGNMENT
-   usecase "\n{{\nsalt\n{+\nBox Id | "Box #"\nLocation | ^Location List^\n Amount | "$$ Amount"\n[SUBMIT]\n}\n}}" as DISPATCH_SSC_FORM
    usecase "\n{{\nsalt\n{+<b>Contact Information</b>\nLocation Name | <Business Name>\nAddress | <Address>\nSSC Phone | <SSC Phone Number>\n}\n}}" as DISPATCH_CONTACT
 
    usecase "End" as DISPATCH_END
    
    CDT --> DISPATCH_START
    SSC_FL --> DISPATCH_START
+   
    DISPATCH_START -down-> BOX_ASSIGNMENT
-   BOX_ASSIGNMENT --> CADET_FORM
-   CADET_FORM --> LOCATION_ASSIGNMENT
-   LOCATION_ASSIGNMENT --> DISPATCH_CONTACT
-   LOCATION_ASSIGNMENT --> DISPATCH_SSC_FORM
-   DISPATCH_SSC_FORM --> DISPATCH_END
-   DISPATCH_CONTACT --> DISPATCH_END
+   BOX_ASSIGNMENT --> LOCATION_ASSIGNMENT
+   DISPATCH_CONTACT --> LOCATION_ASSIGNMENT
+   LOCATION_ASSIGNMENT --> DISPATCH_END
 
    note left of DISPATCH_START
       Each Box will have 2 QR code printed
@@ -44,7 +40,7 @@ rectangle Dispatch {
       SSC Staff provide location and contact infomration to Cadet
    end note
    
-   note left of DISPATCH_CONTACT
+   note top of DISPATCH_CONTACT
       This information should be pre-print before tagging and
       hand out to cadet when the location is assigned
    end note
@@ -56,11 +52,35 @@ rectangle Tagging {
 
 CDT --> TAG
 
+interface "QR Box" as GAPP_QR_BOX
+interface "QR Label" as GAPP_QR_SSC
+
+component GAPP {
+   portin GAPP_CADET_FORM_URL
+   portin GAPP_SSC_FORM_URL
+   
+   component "\n{{\nsalt\n{+\nBox Id | "Box #"\nRank | ^Rank List^\nFirst Name | "First Name"\nLast Name | "Last Name"\n[SUBMIT]\n}\n}}" as GAPP_FORM_CADET
+   component "\n{{\nsalt\n{+\nBox Id | "Box #"\nLocation | ^Location List^\n Amount | "$$ Amount"\n[SUBMIT]\n}\n}}" as GAPP_FORM_SSC
+   
+   database "Google Sheet" {
+      component CadetData
+      component SSCData 
+      component MasterDataSheet
+   }
+   
+   GAPP_CADET_FORM_URL -- GAPP_FORM_CADET
+   GAPP_SSC_FORM_URL -- GAPP_FORM_SSC
+   GAPP_FORM_CADET --> CadetData
+   GAPP_FORM_SSC --> SSCData
+   CadetData --> MasterDataSheet
+   SSCData --> MasterDataSheet
+   
+}
+
 rectangle Return {
    usecase "Start" AS COLLECTION_START
    usecase "Box Return" as BOX_RETURN
    usecase "Count" as COLLECTION_COUNT
-   usecase "\n{{\nsalt\n{+\nBox Id | "Box #"\nLocation | ^Location List^\n Amount | "$$ Amount"\n[SUBMIT]\n}\n}}" as RETURN_SSC_FORM
    usecase "End" as COLLECTION_END
    
    CDT --> COLLECTION_START
@@ -68,8 +88,7 @@ rectangle Return {
    COLLECTION_START -down-> BOX_RETURN
    BOX_RETURN --> COLLECTION_COUNT
    SSC_CNT --> COLLECTION_COUNT
-   COLLECTION_COUNT --> RETURN_SSC_FORM
-   RETURN_SSC_FORM --> COLLECTION_END
+   COLLECTION_COUNT --> COLLECTION_END
 
    note right of BOX_RETURN
       SSC Staff to retrieve the 2nd QR code correspond to the box
@@ -81,5 +100,11 @@ rectangle Return {
       SSC Counter/Staff scan 2nd QR code and enter the amount into Google Form
    end note
 }
+
+BOX_ASSIGNMENT ..> GAPP_QR_BOX : use
+LOCATION_ASSIGNMENT ..> GAPP_QR_SSC : use
+COLLECTION_COUNT ..> GAPP_QR_SSC : use
+GAPP_QR_BOX -- GAPP_CADET_FORM_URL
+GAPP_QR_SSC -- GAPP_SSC_FORM_URL
 
 @enduml
