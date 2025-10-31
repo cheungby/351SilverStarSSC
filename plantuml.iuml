@@ -12,7 +12,6 @@ rectangle Dispatch {
    usecase "Box Assignment" as BOX_ASSIGNMENT
    usecase "Assign Location" as LOCATION_ASSIGNMENT
    usecase "\n{{\nsalt\n{+<b>Contact Information</b>\nLocation Name | <Business Name>\nAddress | <Address>\nSSC Phone | <SSC Phone Number>\n}\n}}" as DISPATCH_CONTACT
-
    usecase "End" as DISPATCH_END
    
    CDT --> DISPATCH_START
@@ -63,8 +62,8 @@ component GAPP {
    component "\n{{\nsalt\n{+\nBox Id | "Box #"\nLocation | ^Location List^\n Amount | "$$ Amount"\n[SUBMIT]\n}\n}}" as GAPP_FORM_SSC
    
    database "Google Sheet" {
-      component CadetData
-      component SSCData 
+      component "{{\nrecord "Cadet Data" {\n-BoxId\n-ShiftId\n-Rank\n-First Name\n-Last Name\n}\n}}" as CadetData
+      component "{{\nrecord "SSC Data" {\n-BoxId\n-ShiftId\n-Location\n-Amount\n}\n}}" as SSCData 
       component MasterDataSheet
    }
    
@@ -96,7 +95,7 @@ rectangle Return {
    end note
    
    note right of COLLECTION_COUNT
-      SSC Counter Counter the fund and write on the QR Code label
+      SSC Counter Counts the fund and write on the QR Code label
       SSC Counter/Staff scan 2nd QR code and enter the amount into Google Form
    end note
 }
