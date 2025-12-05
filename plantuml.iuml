@@ -7,6 +7,8 @@ package SSC {
 
 actor Cadet as CDT
 
+CDT --> Tagging
+
 rectangle Dispatch {
    usecase "Start" as DISPATCH_START
    usecase "Box Form" as BOX_FORM
@@ -20,7 +22,6 @@ rectangle Dispatch {
    DISPATCH_START -down-> LOCATION_ASSIGNMENT
    LOCATION_ASSIGNMENT --> BOX_FORM
    BOX_FORM --> DISPATCH_END
-   DISPATCH_END --> Tagging
 
    note left of BOX_FORM
       Cadet fills in the google form
