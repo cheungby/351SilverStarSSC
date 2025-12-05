@@ -9,73 +9,85 @@ actor Cadet as CDT
 
 rectangle Dispatch {
    usecase "Start" as DISPATCH_START
-   usecase "Box Assignment" as BOX_ASSIGNMENT
-   usecase "\n{{\nsalt\n{+\nBox Id | "Box # (Pre-Assigned)"\nRank | ^Rank List^\nFirst Name| "First Name"\nLast Name | "Last Name"\n[SUBMIT]\n}\n}}" as CADET_FORM
-   usecase "Assign Location" as LOCATION_ASSIGNMENT
-   usecase "\n{{\nsalt\n{+<b>Contact Information</b>\nLocation Name | <Business Name>\nAddress | <Address>\nSSC Phone | <SSC Phone Number>\n}\n}}" as DISPATCH_CONTACT
+   usecase "Box Form" as BOX_FORM
+   usecase "\n{{\nsalt\n{+<b>Google Form</b>\nBox ID | "Box ID"\nRank | ^Rank List^\nFirst Name| "First Name"\nLast Name | "Last Name"\nShift | ^AM/PM/AM and PM^\nLocation | ^Location Name^\n[SUBMIT]\n}\n}}" as BOX_FORM
+   usecase "\n{{\nsalt\n{+<b>Contact Information</b>\nLocation Name | <Business Name>\nAddress | <Address>\nSSC Phone | <SSC Phone Number>\nOn-Site Supervisor | <Supervisor Name>\n}\n}}" as LOCATION_ASSIGNMENT
 
    usecase "End" as DISPATCH_END
    
    CDT --> DISPATCH_START
    SSC_FL --> DISPATCH_START
-   DISPATCH_START -down-> BOX_ASSIGNMENT
-   BOX_ASSIGNMENT --> CADET_FORM
-   CADET_FORM --> LOCATION_ASSIGNMENT
-   LOCATION_ASSIGNMENT --> DISPATCH_CONTACT
-   DISPATCH_CONTACT --> DISPATCH_END
+   DISPATCH_START -down-> LOCATION_ASSIGNMENT
+   LOCATION_ASSIGNMENT --> BOX_FORM
+   BOX_FORM --> DISPATCH_END
+   DISPATCH_END --> Tagging
 
-   note left of DISPATCH_START
-      Each Box will have QR code printed
-      uniquely identify each box
-   end note
-
-   note left of BOX_ASSIGNMENT
-      Cadet scan the QR code on the box
-      and fill in the Google form
+   note left of BOX_FORM
+      Cadet fills in the google form
+      Option 1: (with phone) scan QR code posted on wall
+      Option 2: (without phone) fill in google form on laptop
    end note
    
    note left of LOCATION_ASSIGNMENT
-      After Cadet submit the form
-      SSC Staff assign location
-      SSC Staff scan 2nd QR code and enter location information to Google Form
-      SSC Staff provide location and contact infomration to Cadet
-   end note
-   
-   note left of DISPATCH_CONTACT
-      This information should be pre-print before tagging and
+      SSC Staff 
+      1. assign location and 
+      2. provide location slip to Cadet
+      This information should be pre-printed before tagging and 
       hand out to cadet when the location is assigned
    end note
+   
+   note left of DISPATCH_END
+      Cadets meet with CJCR/Supervisor before leaving
+   end note
+
+
 }
 
 rectangle Tagging {
    usecase "Tagging at Location" as TAG
 }
 
-CDT --> TAG
 
 rectangle Return {
    usecase "Start" AS COLLECTION_START
-   usecase "Box Return" as BOX_RETURN
    usecase "Count" as COLLECTION_COUNT
-   usecase "\n{{\nsalt\n{+in Excel\nBox Id | "Box # (Pre-Assigned)"\nLocation | ^Location List^\n Amount | "$$ Amount"\n[SUBMIT]\n}\n}}" as RETURN_SSC_FORM
+   usecase "Input" as DATA_INPUT
    usecase "End" as COLLECTION_END
+   usecase "Shift End" as SHIFT_END
+   usecase "\n{{\nsalt\n{+<b>Return Slip</b>\nBox ID | "Box ID"\nShift | "AM/PM/AM and PM"\nAmount | "$$Amount"\n}\n}}" as BOX_RETURN
+   
+   BOX_FORM.BOX_RETURN : Failure Mode\nBox ID
    
    CDT --> COLLECTION_START
    SSC_FL --> COLLECTION_START
    COLLECTION_START -down-> BOX_RETURN
+   BOX_RETURN --> SHIFT_END
    BOX_RETURN --> COLLECTION_COUNT
    SSC_CNT --> COLLECTION_COUNT
-   COLLECTION_COUNT --> RETURN_SSC_FORM
-   RETURN_SSC_FORM --> COLLECTION_END
+   COLLECTION_COUNT --> DATA_INPUT
+   DATA_INPUT --> COLLECTION_END
 
    note right of BOX_RETURN
-      SSC Staff to retrieve the 2nd QR code correspond to the box
-      SSC Staff collect fund into the bag and apply QR code to the bag
+      SSC Staff 
+      1. unlock the box
+      2. put $ into ziplock bag
+      3. write down the box id and circle the shift on pre-printed slip
    end note
    
    note right of COLLECTION_COUNT
-      SSC Counter count the fund and write on the list with QR Code 
-      SSC Staff looks up box # and enter the amount into Google Form
+      SSC Counter
+      1. count the fund and 
+      2. write the amount on the Return Slip inside the bag
+   end note
+   
+   note right of DATA_INPUT
+      SSC Counter/Staff
+      1. look up box # in the Google Sheet and 
+      2. enter the amount according to the Box ID
+   end note
+   
+   note right of SHIFT_END
+      Cadet must lock and secure the box for the next shift
    end note
 }
 
